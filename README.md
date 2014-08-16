@@ -1,4 +1,4 @@
-Todo-Backend in Compojure
+Todo-Backend in Compojure (with extensions to play around with CD pipelines)
 ====================
 
 This is a simple implementation of the [Todo-Backend API spec](http://todo-backend.thepete.net/).
