@@ -17,7 +17,7 @@ ssh vagrant@$ENVIRONMENT "killall java; nohup  java -jar backend.jar 8084 > foo.
 RETRIES=5
 
 for i in $(seq $RETRIES); do
-  if curl localhost:18084/todos --silent --fail; then 
+  if curl localhost:18084/todos --silent --fail > /dev/null; then 
     echo "Found deployed version"
     exit 0
   else 
