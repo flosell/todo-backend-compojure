@@ -14,7 +14,7 @@ scp -F /tmp/lambdacd-dev-env-ssh-config $JARFILE vagrant@$ENVIRONMENT:/home/vagr
 
 ssh -F /tmp/lambdacd-dev-env-ssh-config vagrant@$ENVIRONMENT "killall java; nohup  java -jar backend.jar 8084 > foo.out 2> foo.err < /dev/null &"
 
-RETRIES=5
+RETRIES=20
 
 for i in $(seq $RETRIES); do
   if curl localhost:18084/todos --silent --fail > /dev/null; then 
