@@ -15,7 +15,7 @@ fi
 URL="http://localhost:${BACKEND_PORT}/todos"
 for i in {1..10}; do 
   if curl --silent --output /dev/null --fail ${URL}; then 
-    echo -e "\033[1m$URL is up ${URL}\033[0m"
+    echo -e "\033[1m${URL} is up\033[0m"
     exit 0
   fi
   echo "${URL} not up, retrying..."
