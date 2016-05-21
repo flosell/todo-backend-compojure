@@ -1,30 +1,31 @@
 #!/bin/bash -e
 
-if [ $# -lt 2 ]; then
-  echo "usage: <environment> <jarfile>"
+if [ -z "${BACKEND_VERSION}" ]; then
+  echo "ERROR: No BACKEND_VERSION defined!"
   exit 1
 fi
 
-ENVIRONMENT=$1
-JARFILE=$2
+if [ -z "${DEPLOY_ENVIRONMENT}" ]; then
+  echo "ERROR: No DEPLOY_ENVIRONMENT defined!"
+  exit 1
+fi
 
-echo "Deploying $JARFILE to $ENVIRONMENT..."
+if [ "${DEPLOY_ENVIRONMENT}" == "ci" ]; then
+  PUBLIC_FACING_PORT=8081
+elif [ "${DEPLOY_ENVIRONMENT}" == "qa" ]; then
+  PUBLIC_FACING_PORT=8091
+else
+  echo "DEPLOY_ENVIRONMENT must be ci or qa"
+fi
 
-scp -F /tmp/lambdacd-dev-env-ssh-config $JARFILE vagrant@$ENVIRONMENT:/home/vagrant/backend.jar
+CONTAINER_NAME="lambdacd-demo_${DEPLOY_ENVIRONMENT}_backend"
 
-ssh -F /tmp/lambdacd-dev-env-ssh-config vagrant@$ENVIRONMENT "killall java; nohup  java -jar backend.jar 8084 > foo.out 2> foo.err < /dev/null &"
+echo -e "\033[1mStopping old containers in ${DEPLOY_ENVIRONMENT}...\033[0m"
+docker kill $CONTAINER_NAME >/dev/null 2>&1 || true
+docker rm $CONTAINER_NAME >/dev/null 2>&1  || true
 
-RETRIES=20
+echo -e "\033[1mStarting Container in ${DEPLOY_ENVIRONMENT}...\033[0m"
 
-for i in $(seq $RETRIES); do
-  if curl localhost:18084/todos --silent --fail > /dev/null; then 
-    echo "Found deployed version"
-    exit 0
-  else 
-    echo "waiting for deployed version..."
-    sleep 1
-  fi
-done
+docker run --name "${CONTAINER_NAME}" -p $PUBLIC_FACING_PORT:80 -d lambdacd-demo/backend:${BACKEND_VERSION} >/dev/null
 
-echo "ERROR, no deployed version found after $RETRIES retries"
-exit 1
+echo -e "\033[1mContainer now running on http://localhost:$PUBLIC_FACING_PORT/todos\033[0m"
